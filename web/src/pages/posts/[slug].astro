@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadQuery } from "../../lib/loadQuery";
+import { VisualEditing } from "@sanity/astro/visual-editing";
+import { getImageUrl } from "../../lib/getImageUrl";
+
+const inPreviewMode = Astro.url.href.includes("preview") ? true : false; // maybe replace this with regex in future match ?preview exactly
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED == "true";
+
+export async function getStaticPaths(): Promise<{ params: { slug: string } }> {
+  const SLUGS_QUERY = `*[_type == "post" && defined(slug.current)]{
+    "params": {"slug": slug.current}
+  }`;
+  return await sanityClient.fetch(SLUGS_QUERY, Astro.params);
+}
+
+const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
+
+const { data: post } = await loadQuery({
+  query: POST_QUERY,
+  params: Astro.params,
+  enabled: inPreviewMode,
+});
+
+const data: any = post;
+
+console.log(getImageUrl(post.image.asset._ref));
+---
+
+<BaseLayout title="Astro">
+  <h1>{post.title}</h1>
+  <!-- todo: figure out how to make this global, baselayout? how do define inPreviewMode for query then?-->
+  <VisualEditing enabled={visualEditingEnabled} zIndex={10000} />
+</BaseLayout>

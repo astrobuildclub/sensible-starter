@@ -1,16 +1,36 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadQuery } from "../lib/loadQuery";
+import { VisualEditing } from "@sanity/astro/visual-editing";
 
+const inPreviewMode = Astro.url.href.includes("preview") ? true : false; // maybe replace this with regex in future match ?preview exactly
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED == "true";
+
+const { data: posts } = await loadQuery({
+  query: `*[_type == "post"]{ _id, slug, publishedAt, title }`,
+  params: {},
+  enabled: inPreviewMode,
+});
+
+const data: any = posts;
+// console.log(data);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Astro">
+  <h1>My Website</h1>
+  <ul>
+    {
+      data.map((post: any) => (
+        <li class="hover:underline">
+          <a href={`/posts/${post.slug.current}`}>
+            <h2 class="text-xl font-semibold">{post.title}</h2>
+            <p>{new Date(post.publishedAt).toLocaleDateString()}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <!-- todo: figure out how to make this global, baselayout? how do define inPreviewMode for query then?-->
+  <VisualEditing enabled={visualEditingEnabled} zIndex={10000} />
+</BaseLayout>
