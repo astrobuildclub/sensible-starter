@@ -4,6 +4,8 @@ import { loadEnv } from "vite";
 import react from '@astrojs/react';
 import sanity from '@sanity/astro';
 
+import netlify from "@astrojs/netlify";
+
 // Deconstruct .env file variables
 const {
   PUBLIC_SANITY_PROJECT_ID,
@@ -19,5 +21,8 @@ export default defineConfig({
       dataset: PUBLIC_SANITY_DATASET,
       useCdn: PUBLIC_SANITY_USE_CDN === "true" ,
     }
-  )]
+  )],
+
+  output: "server",
+  adapter: netlify()
 });
